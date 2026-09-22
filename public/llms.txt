@@ -1,0 +1,10 @@
+# Elite Print Care Agent Instructions
+
+This file provides guidelines for automated agents and language models about how the Elite Print Care website may be crawled or used for training.
+
+- `User-agent: *` allows standard agents to access the site.
+- `Disallow:` indicates no blocked paths for generalized content discovery.
+
+For more information about the llms.txt standard, see:
+- https://llmstxt.org/
+- https://developers.google.com/search/docs/crawling-indexing/overview

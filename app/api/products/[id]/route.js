@@ -1,5 +1,5 @@
 import { NextResponse } from 'next/server';
-import connectDB from '@/lib/db';
+import { withDB } from '@/lib/db';
 import Product from '@/lib/models/Product';
 import Category from '@/lib/models/Category';
 import { authenticate } from '@/lib/auth';
@@ -113,21 +113,22 @@ async function parseRequestBody(request) {
 }
 
 export async function GET(request, { params }) {
-  return withDB(async () => {  
-    try {const { id: rawId } = await params;
+  return withDB(async () => {
+    try {
+      const { id: rawId } = await params;
       const id = rawId?.toString().trim();
       if (!id) return NextResponse.json({ message: 'Product not found' }, { status: 404 });
-  
+
       let product = null;
-  
+
       if (isValidObjectId(id)) {
         product = await Product.findById(id).populate('category');
       }
-  
+
       if (!product) {
         product = await Product.findOne({ slug: id }).populate('category');
       }
-  
+
       if (!product) return NextResponse.json({ message: 'Product not found' }, { status: 404 });
       return NextResponse.json(product, {
         headers: { 'Cache-Control': PUBLIC_CATALOG_CACHE },
@@ -135,70 +136,72 @@ export async function GET(request, { params }) {
     } catch (error) {
       return NextResponse.json({ message: error.message }, { status: 500 });
     }
-    });
+  });
 }
 
 const NO_STORE = { 'Cache-Control': 'no-store' };
 
 export async function PUT(request, { params }) {
-  return withDB(async () => {  
-    try {const { id: rawId } = await params;
+  return withDB(async () => {
+    try {
+      const { id: rawId } = await params;
       const id = rawId?.toString().trim();
       if (!id) return NextResponse.json({ message: 'Product not found' }, { status: 404, headers: NO_STORE });
       const user = await authenticate(request);
       if (!user || !user.isAdmin) return NextResponse.json({ message: 'Not authorized as admin' }, { status: 401, headers: NO_STORE });
-  
+
       const updateData = await parseRequestBody(request);
-  
+
       let product = null;
       if (isValidObjectId(id)) {
         product = await Product.findById(id);
       }
-  
+
       if (!product) {
         product = await Product.findOne({ slug: id });
       }
-  
+
       if (!product) return NextResponse.json({ message: 'Product not found' }, { status: 404, headers: NO_STORE });
-  
+
       if (updateData.hasOwnProperty('wireless') && updateData.wireless === '') {
         product.set('wireless', undefined);
         product.markModified('wireless');
         delete updateData.wireless;
       }
-  
+
       Object.assign(product, updateData);
       const updatedProduct = await product.save();
       return NextResponse.json(updatedProduct, { headers: NO_STORE });
     } catch (error) {
       return NextResponse.json({ message: error.message }, { status: 500, headers: NO_STORE });
     }
-    });
+  });
 }
 
 export async function DELETE(request, { params }) {
-  return withDB(async () => {  
-    try {const { id: rawId } = await params;
+  return withDB(async () => {
+    try {
+      const { id: rawId } = await params;
       const id = rawId?.toString().trim();
       if (!id) return NextResponse.json({ message: 'Product not found' }, { status: 404, headers: NO_STORE });
       const user = await authenticate(request);
       if (!user || !user.isAdmin) return NextResponse.json({ message: 'Not authorized as admin' }, { status: 401, headers: NO_STORE });
-  
+
       let product = null;
       if (isValidObjectId(id)) {
         product = await Product.findById(id);
       }
-  
+
       if (!product) {
         product = await Product.findOne({ slug: id });
       }
-  
+
       if (!product) return NextResponse.json({ message: 'Product not found' }, { status: 404, headers: NO_STORE });
-  
+
       await product.deleteOne();
       return NextResponse.json({ message: 'Product removed' }, { headers: NO_STORE });
     } catch (error) {
       return NextResponse.json({ message: error.message }, { status: 500, headers: NO_STORE });
     }
-    });
+  });
 }

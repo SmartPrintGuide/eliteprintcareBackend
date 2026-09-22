@@ -1,5 +1,5 @@
 import { NextResponse } from 'next/server';
-import dbConnect from '@/lib/db';
+import { withDB } from '@/lib/db';
 import Chat from '@/lib/models/Chat';
 import { authenticate } from '@/lib/auth';
 

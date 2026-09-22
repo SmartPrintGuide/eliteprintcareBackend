@@ -1,5 +1,5 @@
 import { NextResponse } from 'next/server';
-import dbConnect from '@/lib/db';
+import { withDB } from '@/lib/db';
 import Order from '@/lib/models/Order';
 import { authenticate } from '@/lib/auth';
 
